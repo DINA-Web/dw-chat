@@ -1,0 +1,35 @@
+fs:
+  image: tianon/true
+  volumes:
+    - ./mysql-datadir:/var/lib/mysql
+    - ./mattermost-data:/opt/mattermost/data
+
+mysql:
+  restart: always
+  image: mysql:latest
+  environment:
+    - MYSQL_USER=mattermost
+    - MYSQL_PASSWORD=password
+    - MYSQL_DATABASE=mattermost
+    - MYSQL_ROOT_PASSWORD=password
+  volumes_from:
+    - fs
+
+mattermost:
+  restart: always
+  image: jasl8r/mattermost:3.0.2
+  links:
+    - mysql:mysql
+  ports:
+    - "8080:80"
+  environment:
+    - VIRTUAL_HOST=chat.dina-web.net
+    - LETSENCRYPT_TEST=true
+    - LETSENCRYPT_HOST=chat.dina-web.net
+    - LETSENCRYPT_EMAIL=dina@mail.dina-web.net
+    - MATTERMOST_SECRET_KEY=long-and-random-alphanumeric-string
+    - MATTERMOST_LINK_SALT=long-and-random-alphanumeric-string
+    - MATTERMOST_RESET_SALT=long-and-random-alphanumeric-string
+    - MATTERMOST_INVITE_SALT=long-and-random-alphanumeric-string
+  volumes_from:
+    - fs
